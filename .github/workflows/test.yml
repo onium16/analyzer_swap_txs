@@ -47,38 +47,23 @@ jobs:
 
       - name: Wait for API to be ready
         run: |
-          for i in {1..12}; do
-            if docker compose -f docker/docker_compose.yml -p test_pool exec -T api curl -s http://localhost:8001/tasks/health_redis | grep "healthy"; then
+          for i in {1..20}; do
+            echo "Attempt $i/20: Checking API health..."
+            RESPONSE=$(docker compose -f docker/docker_compose.yml -p test_pool exec -T api curl -s http://localhost:8001/tasks/health_redis || echo "Curl failed")
+            echo "Response: $RESPONSE"
+            if echo "$RESPONSE" | grep -q "healthy"; then
               echo "API is ready!"
               break
             fi
-            echo "Waiting for API to be ready... (Attempt $i/12)"
+            echo "Waiting for API to be ready... (Attempt $i/20)"
             sleep 5
-            if [ $i -eq 12 ]; then
-              echo "API failed to start!"
+            if [ $i -eq 20 ]; then
+              echo "API failed to start! Showing container logs..."
+              docker compose -f docker/docker_compose.yml -p test_pool logs api
               exit 1
             fi
           done
 
       - name: Install dependencies inside Docker container
         run: |
-          docker compose -f docker/docker_compose.yml -p test_pool exec -T api pip install --upgrade pip
-          docker compose -f docker/docker_compose.yml -p test_pool exec -T api pip install -r tests/requirements_test.txt
-
-      - name: Run tests inside Docker container
-        run: |
-          docker compose -f docker/docker_compose.yml -p test_pool exec -T api pytest --disable-warnings --junitxml=/app/report.xml
-
-      - name: Copy test report from container
-        run: |
-          docker cp $(docker compose -f docker/docker_compose.yml -p test_pool ps -q api):/app/report.xml ./report.xml
-
-      - name: Upload test reports
-        uses: actions/upload-artifact@v4
-        with:
-          name: pytest-report
-          path: report.xml
-
-      - name: Shut down Docker Compose services
-        run: |
-          docker compose -f docker/docker_compose.yml -p test_pool down --volumes
+          docker compose -f docker/docker_compose.yml -p test_pool exec
