@@ -12,3 +12,4 @@ _test_*.py
 /venv_test
 /logs
 .env
+.github/workflows/.secrets
