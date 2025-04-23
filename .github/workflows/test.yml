@@ -64,6 +64,10 @@ jobs:
             fi
           done
 
+      - name: Debug test files
+        run: |
+          docker compose -f docker/docker_compose.yml -p test_pool exec api ls -R /app/tests || echo "No tests found"
+
       - name: Install dependencies inside Docker container
         run: |
           docker compose -f docker/docker_compose.yml -p test_pool exec -T api pip install --upgrade pip
@@ -71,7 +75,8 @@ jobs:
 
       - name: Run tests inside Docker container
         run: |
-          docker compose -f docker/docker_compose.yml -p test_pool exec -T api pytest --disable-warnings --junitxml=/app/report.xml
+          docker compose exec -T api pwd
+          docker compose exec api pytest /app/tests/ --disable-warnings --junitxml=/app/report.xml
 
       - name: Copy test report from container
         run: |
