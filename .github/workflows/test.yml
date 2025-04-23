@@ -75,11 +75,11 @@ jobs:
 
       - name: Run tests inside Docker container
         run: |
-          docker compose -f docker/docker_compose.yml -p test_pool exec api pytest --disable-warnings --junitxml=report.xml
+          docker compose -f docker/docker_compose.yml -p test_pool exec api pytest --disable-warnings --junitxml=/app/report.xml
 
       - name: Copy test report from container
         run: |
-          docker cp $(docker compose -f docker/docker_compose.yml -p test_pool ps -q api):report.xml ./report.xml
+          docker cp $(docker compose -f docker/docker_compose.yml -p test_pool ps -q api):/app/report.xml ./report.xml
 
       - name: Upload test reports
         uses: actions/upload-artifact@v4
