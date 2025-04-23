@@ -1,0 +1,68 @@
+name: Test AnalyserTransactions
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker
+        run: |
+          docker version
+          docker compose version  # Verify Docker and Docker Compose are available
+
+      - name: Build Docker containers using Docker Compose
+        run: |
+          docker compose -f docker/docker_compose.yml -p test_pool build
+
+      - name: Run Docker Compose containers
+        run: |
+          docker compose -f docker/docker_compose.yml -p test_pool up -d
+
+      - name: Wait for API to be ready
+        run: |
+          for i in {1..12}; do
+            if docker compose -f docker/docker_compose.yml -p test_pool exec -T api curl -s http://localhost:8001/ | grep "Transaction Analyzer API"; then
+              echo "API is ready!"
+              break
+            fi
+            echo "Waiting for API to be ready... (Attempt $i/12)"
+            sleep 5
+            if [ $i -eq 12 ]; then
+              echo "API failed to start!"
+              exit 1
+            fi
+          done
+
+      - name: Install dependencies inside Docker container
+        run: |
+          docker compose -f docker/docker_compose.yml -p test_pool exec -T api pip install --upgrade pip
+          docker compose -f docker/docker_compose.yml -p test_pool exec -T api pip install -r tests/requirements_6.txt
+
+      - name: Run tests inside Docker container
+        run: |
+          docker compose -f docker/docker_compose.yml -p test_pool exec -T api pytest --disable-warnings --junitxml=/app/report.xml
+
+      - name: Copy test report from container
+        run: |
+          docker cp $(docker compose -f docker/docker_compose.yml -p test_pool ps -q api):/app/report.xml ./report.xml
+
+      - name: Upload test reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: pytest-report
+          path: report.xml
+
+      - name: Shut down Docker Compose services
+        run: |
+          docker compose -f docker/docker_compose.yml -p test_pool down --volumes

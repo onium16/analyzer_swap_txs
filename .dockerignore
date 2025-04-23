@@ -1,0 +1,34 @@
+# Ignore hidden files and folders
+.*
+
+# Ignore virtual environments (e.g., venv or .env files)
+venv/
+*.env
+
+# Ignore IDE files and settings
+.idea/
+.vscode/
+
+# Ignore test files and directories
+tests/
+
+# Ignore documentation files that are not needed in the image
+*.md
+README.md
+LICENSE
+
+# Ignore Python cache files
+__pycache__/
+*.pyc
+*.pyo
+
+# Ignore Docker-related override files
+docker-compose.override.yml
+
+# Ignore environment files that might contain sensitive data
+.env
+*.key
+*.pem
+
+# Ignore system cache files
+.cache/

@@ -1,0 +1,14 @@
+/temp
+*/*/__pycache__
+*/__pycache__
+__pycache__
+/.mypy_cache
+/dist
+/*.egg-info
+/.vscode
+/.pytest_cache
+_test_*.py
+/venv
+/venv_test
+/logs
+.env
