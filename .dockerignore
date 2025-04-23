@@ -9,9 +9,6 @@ venv/
 .idea/
 .vscode/
 
-# Ignore test files and directories
-tests/
-
 # Ignore documentation files that are not needed in the image
 *.md
 README.md
