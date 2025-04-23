@@ -7,6 +7,7 @@ on:
   pull_request:
     branches:
       - main
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -15,22 +16,26 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set environment variables
-        run: |
-          echo "REDIS_URL=redis://redis:6379/0" >> $GITHUB_ENV
-          echo "CELERY_BROKER_URL=redis://redis:6379/0" >> $GITHUB_ENV
-          echo "CELERY_RESULT_BACKEND=redis://redis:6379/0" >> $GITHUB_ENV
-          echo "POSTGRES_USER=postgres" >> $GITHUB_ENV
-          echo "POSTGRES_PASSWORD=postgres" >> $GITHUB_ENV
-          echo "POSTGRES_DB=analyzer" >> $GITHUB_ENV
-          echo "DATABASE_URL=postgresql+asyncpg://postgres:postgres@db:5432/analyzer" >> $GITHUB_ENV
-          echo "LOG_LEVEL=DEBUG" >> $GITHUB_ENV
-          echo "INFURA_KEY=${{ secrets.INFURA_KEY }}" >> $GITHUB_ENV
-
       - name: Set up Docker
         run: |
           docker version
           docker compose version  # Verify Docker and Docker Compose are available
+
+      - name: Create docker/.env file
+        run: |
+          mkdir -p docker
+          cat << EOF > docker/.env
+          REDIS_URL=redis://redis:6379/0
+          CELERY_BROKER_URL=redis://redis:6379/0
+          CELERY_RESULT_BACKEND=redis://redis:6379/0
+          POSTGRES_USER=postgres
+          POSTGRES_PASSWORD=postgres
+          POSTGRES_DB=analyzer
+          POSTGRES_TABLE_SWAP=swap_txs
+          DATABASE_URL=postgresql+asyncpg://postgres:postgres@db:5432/analyzer
+          LOG_LEVEL=DEBUG
+          INFURA_KEY=${{ secrets.INFURA_KEY }}
+          EOF
 
       - name: Build Docker containers using Docker Compose
         run: |
@@ -43,7 +48,7 @@ jobs:
       - name: Wait for API to be ready
         run: |
           for i in {1..12}; do
-            if docker compose -f docker/docker_compose.yml -p test_pool exec -T api curl -s http://localhost:8001/ | grep "Transaction Analyzer API"; then
+            if docker compose -f docker/docker_compose.yml -p test_pool exec -T api curl -s http://localhost:8001/tasks/health_redis | grep "healthy"; then
               echo "API is ready!"
               break
             fi
@@ -58,7 +63,7 @@ jobs:
       - name: Install dependencies inside Docker container
         run: |
           docker compose -f docker/docker_compose.yml -p test_pool exec -T api pip install --upgrade pip
-          docker compose -f docker/docker_compose.yml -p test_pool exec -T api pip install -r tests/requirements_6.txt
+          docker compose -f docker/docker_compose.yml -p test_pool exec -T api pip install -r tests/requirements_test.txt
 
       - name: Run tests inside Docker container
         run: |
