@@ -75,7 +75,7 @@ jobs:
 
       - name: Run tests inside Docker container
         run: |
-          docker compose exec api pytest /app/tests/ --disable-warnings --junitxml=/app/report.xml
+          docker compose exec api pytest --disable-warnings --junitxml=/app/report.xml
 
       - name: Copy test report from container
         run: |
