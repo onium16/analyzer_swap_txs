@@ -49,7 +49,7 @@ jobs:
         run: |
           for i in {1..20}; do
             echo "Attempt $i/20: Checking API health..."
-            RESPONSE=$(docker compose -f docker/docker_compose.yml -p test_pool exec -T api curl -s http://localhost:8001/tasks/health_redis || echo "Curl failed")
+            RESPONSE=$(docker compose -f docker/docker_compose.yml -p test_pool exec -T api curl -s http://localhost:8000/tasks/health_redis || echo "Curl failed")
             echo "Response: $RESPONSE"
             if echo "$RESPONSE" | grep -q "healthy"; then
               echo "API is ready!"
