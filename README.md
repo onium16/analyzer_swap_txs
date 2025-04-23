@@ -1,5 +1,5 @@
 ### 📘 Available in other languages:
-- 🇷🇺 [Читать на русском](README.ru.md)
+- [Читать на русском](README.ru.md)
 
 ## Transaction Analyzer
 
