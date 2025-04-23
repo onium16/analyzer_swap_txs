@@ -2,9 +2,13 @@
 FROM python:3.9-slim
 
 WORKDIR /app
+
 COPY requirements.txt .
-COPY test/requirements_test.txt /app/test/.
+COPY tests/requirements_test.txt /app/test/.
+
 RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r /app/test/requirements_test.txt
+
 RUN apt-get update && apt-get install -y curl
 COPY . /app
 
