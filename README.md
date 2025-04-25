@@ -47,6 +47,19 @@ Allows:
 - [PostgreSQL](https://www.postgresql.org/) — relational database
 - [Flower](https://flower.readthedocs.io/en/stable/) — Redis data visualization
 
+## Planned Improvements
+
+It is necessary to add an `nginx` configuration as a reverse proxy to enhance security:
+
+- Encapsulation of all services behind Nginx  
+  Only the required ports (e.g., 80/443) will be exposed to the public.
+
+- Restricting access to internal services  
+  Ports such as `5433`, `6380`, `8001`, and `5556` will be closed from external access — they will only be accessible through Nginx.
+
+- Creating an alternative compose file `docker-compose.nginx.yml`  
+  For production environments, with Nginx enabled and external ports disabled for all services except Nginx itself.
+
 ## Usage Guide
 
 1. Install [Docker](https://www.docker.com/) and [Docker Compose](https://docs.docker.com/compose/install/).
